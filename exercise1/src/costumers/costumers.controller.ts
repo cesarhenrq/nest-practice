@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  NotFoundException,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { CostumersService } from './costumers.service';
 import { CreateCostumerDto } from './dto/create-costumer.dto';
@@ -27,20 +29,50 @@ export class CostumersController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.costumersService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: string) {
+    try {
+      const costumer = this.costumersService.findOne(+id);
+      if (!costumer) {
+        throw new NotFoundException(`Costumer not found`);
+      }
+
+      return costumer;
+    } catch (error) {
+      return {
+        statusCode: error.status || 500,
+        message: error.message || 'Internal Server Error',
+        error: error.name || 'Internal Server Error',
+      };
+    }
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: string,
     @Body() updateCostumerDto: UpdateCostumerDto,
   ) {
-    return this.costumersService.update(+id, updateCostumerDto);
+    try {
+      const updatedCostumer = this.costumersService.update(
+        +id,
+        updateCostumerDto,
+      );
+
+      if (!updatedCostumer) {
+        throw new NotFoundException(`Costumer not found`);
+      }
+
+      return updatedCostumer;
+    } catch (error) {
+      return {
+        statusCode: error.status || 500,
+        message: error.message || 'Internal Server Error',
+        error: error.name || 'Internal Server Error',
+      };
+    }
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: string) {
     return this.costumersService.remove(+id);
   }
 }

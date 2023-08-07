@@ -23,11 +23,16 @@ export class CostumersService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} costumer`;
+    return this.repository.find((costumer) => costumer.id === id);
   }
 
   update(id: number, updateCostumerDto: UpdateCostumerDto) {
-    return `This action updates a #${id} costumer`;
+    const costumer = this.findOne(id);
+
+    if (!costumer) {
+      return null;
+    }
+    return { ...costumer, ...updateCostumerDto };
   }
 
   remove(id: number) {
