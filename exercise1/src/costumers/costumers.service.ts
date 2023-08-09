@@ -7,7 +7,7 @@ import { Costumer } from './entities/costumer.entity';
 export class CostumersService {
   repository: Costumer[] = [];
 
-  create(createCostumerDto: CreateCostumerDto) {
+  create(createCostumerDto: CreateCostumerDto): Costumer {
     const costumer = new Costumer(createCostumerDto);
     this.repository.push(costumer);
     return costumer;
@@ -22,11 +22,11 @@ export class CostumersService {
     );
   }
 
-  findOne(id: number) {
+  findOne(id: number): Costumer | null {
     return this.repository.find((costumer) => costumer.id === id);
   }
 
-  update(id: number, updateCostumerDto: UpdateCostumerDto) {
+  update(id: number, updateCostumerDto: UpdateCostumerDto): Costumer | null {
     const costumer = this.findOne(id);
 
     if (!costumer) {
@@ -35,7 +35,15 @@ export class CostumersService {
     return { ...costumer, ...updateCostumerDto };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} costumer`;
+  remove(id: number): Costumer | null {
+    const costumer = this.findOne(id);
+
+    if (!costumer) {
+      return null;
+    }
+
+    this.repository = this.repository.filter((costumer) => costumer.id !== id);
+
+    return costumer;
   }
 }

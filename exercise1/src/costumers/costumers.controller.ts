@@ -9,6 +9,8 @@ import {
   Query,
   NotFoundException,
   ParseIntPipe,
+  HttpCode,
+  ValidationPipe,
 } from '@nestjs/common';
 import { CostumersService } from './costumers.service';
 import { CreateCostumerDto } from './dto/create-costumer.dto';
@@ -49,7 +51,7 @@ export class CostumersController {
   @Patch(':id')
   update(
     @Param('id', ParseIntPipe) id: string,
-    @Body() updateCostumerDto: UpdateCostumerDto,
+    @Body(new ValidationPipe()) updateCostumerDto: UpdateCostumerDto,
   ) {
     try {
       const updatedCostumer = this.costumersService.update(
@@ -72,7 +74,20 @@ export class CostumersController {
   }
 
   @Delete(':id')
+  @HttpCode(204)
   remove(@Param('id', ParseIntPipe) id: string) {
-    return this.costumersService.remove(+id);
+    try {
+      const deletedCostumer = this.costumersService.remove(+id);
+
+      if (!deletedCostumer) {
+        throw new NotFoundException(`Costumer not found`);
+      }
+    } catch (error) {
+      return {
+        statusCode: error.status || 500,
+        message: error.message || 'Internal Server Error',
+        error: error.name || 'Internal Server Error',
+      };
+    }
   }
 }
